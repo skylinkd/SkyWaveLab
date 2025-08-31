@@ -233,23 +233,36 @@
 
     <!-- Guitar -->
     <div class="card" id="guitarPane" role="tabpanel" style="display:none">
-        <div class="row" style="justify-content: space-between;">
-          <label>Guitar (E A D G B E • 0–12 frets)</label>
-          <div class="col" style="max-width: 180px;">
-            <label>Position</label>
-            <select id="guitarPosition">
-                <option value="all">All Positions</option>
-                <option value="1">Position 1</option>
-                <option value="2">Position 2</option>
-                <option value="3">Position 3</option>
-                <option value="4">Position 4</option>
-                <option value="5">Position 5</option>
-            </select>
-          </div>
+        <div class="row" style="justify-content: space-between; align-items: center;">
+            <label>Guitar (E A D G B E • 0–12 frets)</label>
+            <div class="row" style="gap: 16px;">
+                <div class="col">
+                    <label>Tuning</label>
+                    <div id="tuningButtons" class="row" style="gap: 4px;">
+                        <button class="btn" data-midi="64" title="High E (String 1)">E</button>
+                        <button class="btn" data-midi="59" title="B (String 2)">B</button>
+                        <button class="btn" data-midi="55" title="G (String 3)">G</button>
+                        <button class="btn" data-midi="50" title="D (String 4)">D</button>
+                        <button class="btn" data-midi="45" title="A (String 5)">A</button>
+                        <button class="btn" data-midi="40" title="Low E (String 6)">E</button>
+                    </div>
+                </div>
+                <div class="col" style="max-width: 180px;">
+                    <label>Position</label>
+                    <select id="guitarPosition">
+                        <option value="all">All Positions</option>
+                        <option value="1">Position 1</option>
+                        <option value="2">Position 2</option>
+                        <option value="3">Position 3</option>
+                        <option value="4">Position 4</option>
+                        <option value="5">Position 5</option>
+                    </select>
+                </div>
+            </div>
         </div>
-      <div class="gwrap"><svg id="guitar" viewBox="0 0 1000 300"></svg></div>
-      <div class="voicingInfo" id="voicingInfo">Voicing: —</div>
-      <pre class="tab" id="tab">E|----------------|
+        <div class="gwrap"><svg id="guitar" viewBox="0 0 1000 300"></svg></div>
+        <div class="voicingInfo" id="voicingInfo">Voicing: —</div>
+        <pre class="tab" id="tab">E|----------------|
 B|----------------|
 G|----------------|
 D|----------------|
@@ -1138,6 +1151,7 @@ function wireBasics(){
     el('playModeToggle').addEventListener('click', (e) => { if(e.target.tagName !== 'BUTTON') return; isSongMode = e.target.dataset.mode === 'song'; el('playModeToggle').querySelector('.active').classList.remove('active'); e.target.classList.add('active'); });
     el('addToChainBtns').addEventListener('click', e => { if(e.target.tagName !== 'BUTTON') return; songChain.push(e.target.dataset.pattern); renderSongChain(); });
     el('clearChain').onclick = () => { songChain = []; renderSongChain(); };
+    const tuningButtons = el('tuningButtons'); if (tuningButtons) { tuningButtons.addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON' && e.target.dataset.midi) { if (!initAudioSystem()) return; const midi = parseInt(e.target.dataset.midi, 10); playNoteVisual(midi, 3000); } }); }
 }
 
 function syncChordToKey(){if(!keyRoot||!chordRoot||!keyMode) return; chordRoot.value=keyRoot.value; chordType.value=(keyMode.value==='major')?'Major':'Minor'}
