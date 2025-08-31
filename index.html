@@ -252,8 +252,8 @@
                     <select id="guitarPosition">
                         <option value="all">All Positions</option>
                         <option value="1">Position 1 (0-3)</option>
-                        <option value="2">Position 2 (4-8)</option>
-                        <option value="3">Position 3 (9+)</option>
+                        <option value="2">Position 2 (5-7)</option>
+                        <option value="3">Position 3 (8+)</option>
                     </select>
                 </div>
             </div>
@@ -683,10 +683,10 @@ function drawGuitarFretboard() {
     if (position === '1') {
         maxFret = 3;
     } else if (position === '2') {
-        minFret = 4;
-        maxFret = 8;
+        minFret = 5;
+        maxFret = 7;
     } else if (position === '3') {
-        minFret = 9;
+        minFret = 8;
         maxFret = FRETS;
     }
 
