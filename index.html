@@ -635,9 +635,33 @@ const sequencerPresets = {
         kit: 'dnb', bpm: 174,
         grid: (()=>{ let g = Array(SEQ_INSTRUMENTS.length).fill(0).map(()=>Array(64).fill(false)); g[0][0]=true;g[0][10]=true;g[2][4]=true;g[2][12]=true; for(let i=0;i<16;i+=2)g[5][i]=true; g[6][14]=true; return g; })()
     },
+    'house': {
+        kit: 'house', bpm: 125,
+        grid: (()=>{ let g = Array(SEQ_INSTRUMENTS.length).fill(0).map(()=>Array(64).fill(false)); for(let i=0;i<16;i+=4)g[0][i]=true; for(let i=4;i<16;i+=4)g[4][i]=true; for(let i=2;i<16;i+=4)g[5][i]=true; return g; })()
+    },
+    'techno': {
+        kit: 'techno', bpm: 130,
+        grid: (()=>{ let g = Array(SEQ_INSTRUMENTS.length).fill(0).map(()=>Array(64).fill(false)); for(let i=0;i<16;i+=4)g[0][i]=true; for(let i=2;i<16;i+=4)g[6][i]=true; g[2][4]=true;g[2][12]=true; return g; })()
+    },
     'minimal_house': {
         kit: 'minimal_house', bpm: 125,
         grid: (()=>{ let g = Array(SEQ_INSTRUMENTS.length).fill(0).map(()=>Array(64).fill(false)); for(let i=0;i<16;i+=4)g[0][i]=true; for(let i=2;i<16;i+=4)g[5][i]=true; g[4][4]=true;g[4][12]=true; return g; })()
+    },
+    'funk': {
+        kit: 'funk', bpm: 110,
+        grid: (()=>{ let g = Array(SEQ_INSTRUMENTS.length).fill(0).map(()=>Array(64).fill(false)); g[0][0]=true;g[0][3]=true;g[0][6]=true;g[0][10]=true; g[2][4]=true;g[2][12]=true; for(let i=0;i<16;i++)g[5][i]=true; g[6][3]=true;g[6][7]=true;g[6][11]=true;g[6][15]=true; return g; })()
+    },
+    'rock': {
+        kit: 'rock', bpm: 120,
+        grid: (()=>{ let g = Array(SEQ_INSTRUMENTS.length).fill(0).map(()=>Array(64).fill(false)); g[0][0]=true;g[0][8]=true; g[2][4]=true;g[2][12]=true; for(let i=0;i<16;i+=2)g[5][i]=true; g[11][0]=true; return g; })()
+    },
+    'lo-fi': {
+        kit: 'lofi', bpm: 85,
+        grid: (()=>{ let g = Array(SEQ_INSTRUMENTS.length).fill(0).map(()=>Array(64).fill(false)); g[0][0]=true;g[0][7]=true;g[0][9]=true; g[2][4]=true;g[2][12]=true; g[5][0]=true;g[5][2]=true;g[5][5]=true;g[5][6]=true;g[5][8]=true;g[5][10]=true;g[5][13]=true;g[5][14]=true; for(let i=0;i<16;i++)g[8][i]=true; return g; })()
+    },
+    'synthwave': {
+        kit: 'synthwave', bpm: 100,
+        grid: (()=>{ let g = Array(SEQ_INSTRUMENTS.length).fill(0).map(()=>Array(64).fill(false)); g[0][0]=true;g[0][4]=true;g[0][8]=true;g[0][11]=true;g[0][12]=true; g[2][4]=true;g[2][12]=true; for(let i=0;i<16;i+=2)g[5][i]=true; g[10][14]=true;g[10][15]=true; return g; })()
     },
     'jazz': {
         kit: 'jazz', bpm: 110,
@@ -915,7 +939,19 @@ function applyPreset(name) {
     document.querySelector('#drum-kit-list .active')?.classList.remove('active');
     document.querySelector(`#drum-kit-list [data-kit="${preset.kit}"]`)?.classList.add('active');
     
-    seqGrid = JSON.parse(JSON.stringify(preset.grid));
+    const masterPattern = preset.grid;
+    const patternLength = 16;
+    let newGrid = Array(SEQ_INSTRUMENTS.length).fill(0).map(() => Array(64).fill(false));
+
+    for (let row = 0; row < SEQ_INSTRUMENTS.length; row++) {
+        for (let step = 0; step < 64; step++) {
+            if (masterPattern[row]) {
+                newGrid[row][step] = masterPattern[row][step % patternLength];
+            }
+        }
+    }
+    seqGrid = newGrid;
+    
     buildSequencer();
     
     if (isClockPlaying) {
