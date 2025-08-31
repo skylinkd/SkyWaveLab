@@ -235,7 +235,7 @@
     <div class="card" id="guitarPane" role="tabpanel" style="display:none">
         <div class="row" style="justify-content: space-between; align-items: center;">
             <label>Guitar (E A D G B E • 0–12 frets)</label>
-                        <div class="row" style="gap: 48px;">
+            <div class="row" style="gap: 48px;">
                 <div class="col">
                     <label>Tuning</label>
                     <div id="tuningButtons" class="row" style="gap: 4px; flex-wrap: nowrap;">
@@ -405,8 +405,9 @@ const keyboardSounds = {
     grit_bass: 'Gritty Bass', flute_synth: 'Flute Synth',
     mellow_rhodes: 'Mellow Rhodes', subtle_pad: 'Subtle Pad', plucked_bell: 'Plucked Bell',
     bass_808: '808 Bass', tape_piano: 'Tape Piano', hoover_lead: 'Hoover Lead',
-    trance_gate_pad: 'Trance Gate Pad', future_bass_chord: 'Future Bass Chord', acid_bass: 'Acid Bass',
+    future_bass_chord: 'Future Bass Chord', acid_bass: 'Acid Bass',
     techno_stab: 'Techno Stab',
+    pedal_piano: 'Pedal Piano', string_ensemble: 'String Ensemble', mellow_pad: 'Mellow Pad', felt_piano: 'Felt Piano', crystal_keys: 'Crystal Keys',
     triangle: 'Triangle Synth', sine: 'Pure Sine Wave', square: 'Square Wave', sawtooth: 'Sawtooth Synth'
 };
 
@@ -470,8 +471,8 @@ function startPianoNote(midi, event) {
     const now = audioCtx.currentTime;
     const note = { oscillators: [], envelope: audioCtx.createGain(), lfos: [] };
     
-    const attackTime = {pluck:0.005, bass:0.01, organ:0.02, pad:0.2, acoustic:0.005, lead:0.01, wobble:0.02, bell:0.005, harpsichord:0.002, glass:0.005, marimba:0.005, chiptune:0.001, vocal:0.4, fm:0.01, synthwave_pad: 0.8, sub_bass: 0.01, cosmic_fx: 0.1, warm_saw: 0.5, grit_bass: 0.02, flute_synth: 0.05, mellow_rhodes: 0.02, subtle_pad: 1.2, plucked_bell: 0.005, bass_808: 0.01, tape_piano: 0.05, hoover_lead: 0.01, trance_gate_pad: 0.4, future_bass_chord: 0.1, acid_bass: 0.01, techno_stab: 0.005}[currentKeyboardSound] || 0.01;
-    const initialGain = {pluck:0.4, bass:0.5, organ:0.2, pad:0.15, acoustic:0.4, lead:0.3, wobble:0.4, bell:0.35, harpsichord:0.4, glass:0.25, marimba:0.4, chiptune:0.3, vocal:0.2, fm:0.3, synthwave_pad: 0.15, analog_lead: 0.25, sub_bass: 0.7, poly_80s: 0.2, lofi_piano: 0.5, modern_pluck: 0.35, warm_saw: 0.15, grit_bass: 0.3, flute_synth: 0.4, mellow_rhodes: 0.4, subtle_pad: 0.2, plucked_bell: 0.5, bass_808: 0.9, tape_piano: 0.4, hoover_lead: 0.2, trance_gate_pad: 0.2, future_bass_chord: 0.2, acid_bass: 0.4, techno_stab: 0.3}[currentKeyboardSound] || 0.3;
+    const attackTime = {pluck:0.005, bass:0.01, organ:0.02, pad:0.2, acoustic:0.005, lead:0.01, wobble:0.02, bell:0.005, harpsichord:0.002, glass:0.005, marimba:0.005, chiptune:0.001, vocal:0.4, fm:0.01, synthwave_pad: 0.8, sub_bass: 0.01, cosmic_fx: 0.1, warm_saw: 0.5, grit_bass: 0.02, flute_synth: 0.05, mellow_rhodes: 0.02, subtle_pad: 1.2, plucked_bell: 0.005, bass_808: 0.01, tape_piano: 0.05, hoover_lead: 0.01, future_bass_chord: 0.1, acid_bass: 0.01, techno_stab: 0.005, pedal_piano: 0.01, string_ensemble: 0.5, mellow_pad: 1.5, felt_piano: 0.02, crystal_keys: 0.005}[currentKeyboardSound] || 0.01;
+    const initialGain = {pluck:0.4, bass:0.5, organ:0.2, pad:0.15, acoustic:0.4, lead:0.3, wobble:0.4, bell:0.35, harpsichord:0.4, glass:0.25, marimba:0.4, chiptune:0.3, vocal:0.2, fm:0.3, synthwave_pad: 0.15, analog_lead: 0.25, sub_bass: 0.7, poly_80s: 0.2, lofi_piano: 0.5, modern_pluck: 0.35, warm_saw: 0.15, grit_bass: 0.3, flute_synth: 0.4, mellow_rhodes: 0.4, subtle_pad: 0.2, plucked_bell: 0.5, bass_808: 0.9, tape_piano: 0.4, hoover_lead: 0.2, future_bass_chord: 0.2, acid_bass: 0.4, techno_stab: 0.3, pedal_piano: 0.4, string_ensemble: 0.2, mellow_pad: 0.15, felt_piano: 0.3, crystal_keys: 0.3}[currentKeyboardSound] || 0.3;
     note.envelope.gain.setValueAtTime(0, now);
     note.envelope.gain.linearRampToValueAtTime(initialGain, now + attackTime);
     const createOsc = (freq, type) => { const osc = audioCtx.createOscillator(); osc.type = type; osc.frequency.value = freq; return osc; };
@@ -511,12 +512,16 @@ function startPianoNote(midi, event) {
         case 'bass_808': const b8Osc=createOsc(finalFrequency/2,'sine'); b8Osc.frequency.setValueAtTime(finalFrequency, now); b8Osc.frequency.exponentialRampToValueAtTime(finalFrequency/2, now + 0.05); b8Osc.connect(note.envelope); note.oscillators.push(b8Osc); break;
         case 'tape_piano': const tpLFO = createOsc(0.2, 'sine'); const tpLFOgain = audioCtx.createGain(); tpLFOgain.gain.value = 3; tpLFO.connect(tpLFOgain); note.lfos.push(tpLFO); const tpFilter2=audioCtx.createBiquadFilter();tpFilter2.type='lowpass';tpFilter2.frequency.value=2500; [1, 2, 3].forEach((h,i) => {const o = createOsc(finalFrequency*h, 'sine'); tpLFOgain.connect(o.detune); o.connect(tpFilter2); note.oscillators.push(o)}); tpFilter2.connect(note.envelope); break;
         case 'hoover_lead': createAndConnectOsc(finalFrequency, 'sawtooth', 0.33, -12); createAndConnectOsc(finalFrequency, 'sawtooth', 0.33, 0); createAndConnectOsc(finalFrequency, 'sawtooth', 0.33, 12); break;
-        case 'trance_gate_pad': const bpm = +(el('bpm')?.value) || 120; const lfoFrequency = (bpm / 60) * 2; const tgpLFO=createOsc(lfoFrequency,'square'); const tgpGain=audioCtx.createGain(); tgpLFO.connect(tgpGain).connect(note.envelope.gain); note.lfos.push(tgpLFO); createAndConnectOsc(finalFrequency, 'sawtooth', 0.5, -5); createAndConnectOsc(finalFrequency, 'sawtooth', 0.5, 5); break;
         case 'future_bass_chord': const fbLFO = createOsc(0.5, 'sine'); const fbGain = audioCtx.createGain(); fbGain.gain.value = 10; fbLFO.connect(fbGain); note.lfos.push(fbLFO); for (let i = 0; i < 7; i++) { const osc = createOsc(finalFrequency, 'sawtooth'); osc.detune.value = i * 20 - 60; fbGain.connect(osc.detune); osc.connect(note.envelope); note.oscillators.push(osc); } break;
         case 'acid_bass': const abOsc = createOsc(finalFrequency/2, 'sawtooth'); const abFilter = audioCtx.createBiquadFilter(); abFilter.type = 'lowpass'; abFilter.Q.value=15; abFilter.frequency.setValueAtTime(2000, now); abFilter.frequency.exponentialRampToValueAtTime(200, now + 0.1); abOsc.connect(abFilter).connect(note.envelope); note.oscillators.push(abOsc); break;
         case 'techno_stab': [0, 3, 7].forEach(s => createAndConnectOsc(m2f(finalMidi + s), 'sawtooth')); break;
+        case 'pedal_piano': [1, 2, 3, 4].forEach((h, i) => createAndConnectOsc(finalFrequency * h, 'sine', 1 / (i + 1.5))); break;
+        case 'string_ensemble': createAndConnectOsc(finalFrequency, 'sawtooth', 0.4, -6); createAndConnectOsc(finalFrequency, 'sawtooth', 0.4, 6); createAndConnectOsc(m2f(finalMidi-12), 'sawtooth', 0.2, 4); break;
+        case 'mellow_pad': createAndConnectOsc(finalFrequency, 'triangle', 0.5, -4); createAndConnectOsc(finalFrequency, 'sine', 0.5, 4); break;
+        case 'felt_piano': const fpFilter = audioCtx.createBiquadFilter(); fpFilter.type='lowpass'; fpFilter.frequency.value = 1500; [1, 2.01, 3.02].forEach((h, i) => createAndConnectOsc(finalFrequency * h, 'sine', 1 / (i + 2))); note.oscillators.forEach(o => o.connect(fpFilter)); fpFilter.connect(note.envelope); break;
+        case 'crystal_keys': const modOsc = createOsc(finalFrequency * 1.414, 'sine'); const modGain = audioCtx.createGain(); modGain.gain.value = finalFrequency * 2; const carrierOsc = createOsc(finalFrequency, 'sine'); modOsc.connect(modGain).connect(carrierOsc.frequency); carrierOsc.connect(note.envelope); note.oscillators.push(modOsc, carrierOsc); break;
     }
-    const destination = { acoustic: pianoReverbNode, bass: keyboardGain, wobble: keyboardGain, marimba: masterDelay, pad: pianoReverbNode, vocal: pianoReverbNode, synthwave_pad: pianoReverbNode, glass: masterDelay, warm_saw: pianoReverbNode, mellow_rhodes: masterDelay, subtle_pad: pianoReverbNode, techno_stab: masterDelay }[currentKeyboardSound] || keyboardGain;
+    const destination = { acoustic: pianoReverbNode, bass: keyboardGain, wobble: keyboardGain, marimba: masterDelay, pad: pianoReverbNode, vocal: pianoReverbNode, synthwave_pad: pianoReverbNode, glass: masterDelay, warm_saw: pianoReverbNode, mellow_rhodes: masterDelay, subtle_pad: pianoReverbNode, techno_stab: masterDelay, pedal_piano: pianoReverbNode, string_ensemble: pianoReverbNode, mellow_pad: pianoReverbNode, crystal_keys: masterDelay }[currentKeyboardSound] || keyboardGain;
     note.envelope.connect(keyboardGain);
     if (destination !== keyboardGain) {
         note.envelope.connect(destination);
@@ -533,7 +538,7 @@ function stopPianoNote(midi) {
         if (currentKeyboardSound === 'synth_editor') {
             release = note.releaseTime;
         } else {
-            release = {pluck: 0.2, bass: 0.3, acoustic: 2.0, pad: 1.5, wobble: 0.4, bell: 1.0, harpsichord: 0.1, glass: 1.2, marimba: 0.5, chiptune: 0.05, vocal: 2.5, fm: 0.8, synthwave_pad: 2.0, sub_bass: 0.1, vibraphone: 1.5, cosmic_fx: 0.8, lofi_piano: 1.0, modern_pluck: 0.3, warm_saw: 1.2, flute_synth: 0.3, mellow_rhodes: 0.8, subtle_pad: 2.5, plucked_bell: 0.5, bass_808: 0.2, tape_piano: 0.4, hoover_lead: 0.3, trance_gate_pad: 0.4, future_bass_chord: 0.6, acid_bass: 0.1, techno_stab: 0.3}[currentKeyboardSound] || 0.8; 
+            release = {pluck: 0.2, bass: 0.3, acoustic: 2.0, pad: 1.5, wobble: 0.4, bell: 1.0, harpsichord: 0.1, glass: 1.2, marimba: 0.5, chiptune: 0.05, vocal: 2.5, fm: 0.8, synthwave_pad: 2.0, sub_bass: 0.1, vibraphone: 1.5, cosmic_fx: 0.8, lofi_piano: 1.0, modern_pluck: 0.3, warm_saw: 1.2, flute_synth: 0.3, mellow_rhodes: 0.8, subtle_pad: 2.5, plucked_bell: 0.5, bass_808: 0.2, tape_piano: 0.4, hoover_lead: 0.3, future_bass_chord: 0.6, acid_bass: 0.1, techno_stab: 0.3, pedal_piano: 4.0, string_ensemble: 2.5, mellow_pad: 3.0, felt_piano: 1.5, crystal_keys: 1.0}[currentKeyboardSound] || 0.8; 
         }
         note.envelope.gain.cancelScheduledValues(now); 
         note.envelope.gain.setValueAtTime(note.envelope.gain.value, now); 
@@ -822,7 +827,6 @@ const sequencerPresets = {
     'trap': { kit: 'trap', bpm: 140, grid: (()=>{ let g=createEmptyGrid(); g[0][0]=true;g[0][6]=true;g[2][4]=true;g[2][12]=true;g[5][0]=true;g[5][2]=true;g[5][4]=true;g[5][6]=true;g[5][7]=true;g[5][8]=true;g[5][10]=true;g[5][12]=true;g[5][14]=true;g[5][15]=true;g[6][10]=true; return g; })() },
     'modern_trap': { kit: 'trap', bpm: 150, grid: (()=>{ let g=createEmptyGrid();g[0][0]=!0;g[0][6]=!0;g[0][8]=!0;g[0][14]=!0;g[2][4]=!0;g[2][12]=!0;g[5][0]=!0;g[5][1]=!0;g[5][2]=!0;g[5][4]=!0;g[5][5]=!0;g[5][8]=!0;g[5][9]=!0;g[5][10]=!0;g[5][12]=!0;g[5][13]=!0;g[6][14]=!0;return g;})()},
     'drill': { kit: 'trap', bpm: 142, grid: (()=>{ let g = createEmptyGrid(); g[0][0]=true;g[0][11]=true;g[2][4]=true;g[2][12]=true;g[5][0]=true;g[5][1]=true;g[5][2]=true;g[5][4]=true;g[5][6]=true;g[5][7]=true;g[5][8]=true;g[5][10]=true;g[5][12]=true;g[5][14]=true;g[5][15]=true;g[6][10]=true; return g; })() },
-    'phonk': { kit: 'trap', bpm: 155, grid: (()=>{ let g = createEmptyGrid(); g[0][0]=true;g[0][4]=true;g[0][6]=true;g[0][10]=true;g[0][14]=true; g[2][8]=true; g[9][2]=true;g[9][3]=true;g[9][9]=true;g[9][11]=true;g[9][12]=true;g[9][13]=true; g[5][0]=true;g[5][1]=true;g[5][4]=true;g[5][5]=true;g[5][6]=true;g[5][7]=true;g[5][8]=true;g[5][10]=true;g[5][14]=true;g[5][15]=true; return g; })() },
     'classic_boom_bap': { kit: 'vintage', bpm: 92, grid: (()=>{ let g=createEmptyGrid();g[0][0]=!0;g[0][4]=!0;g[0][8]=!0;g[0][12]=!0;g[1][6]=!0;g[1][14]=!0;g[2][4]=!0;g[2][12]=!0;for(let i=0;i<16;i+=2)g[5][i]=!0;g[6][1]=!0;g[6][9]=!0;return g;})()},
     'hip_hop_90s': { kit: 'vintage', bpm: 90, grid: (()=>{ let g = createEmptyGrid(); g[0][0]=true;g[0][7]=true;g[2][4]=true;g[2][12]=true; for(let i=0;i<16;i+=2)g[5][i]=true; g[6][14]=true; return g; })() },
     'lo-fi': { kit: 'lofi', bpm: 85, grid: (()=>{ let g = createEmptyGrid(); g[0][0]=true;g[0][7]=true;g[0][9]=true; g[2][4]=true;g[2][12]=true; g[5][0]=true;g[5][2]=true;g[5][5]=true;g[5][6]=true;g[5][8]=true;g[5][10]=true;g[5][13]=true;g[5][14]=true; for(let i=0;i<16;i++)g[8][i]=true; return g; })() },
@@ -834,11 +838,10 @@ const sequencerPresets = {
     'rnb_groove': { kit: 'house', bpm: 100, grid: (()=>{ let g=createEmptyGrid();g[0][0]=!0;g[0][8]=!0;g[0][10]=!0;g[2][4]=!0;g[3][12]=!0;for(let i=2;i<16;i+=4)g[5][i]=!0;g[6][1]=!0;g[6][5]=!0;g[6][9]=!0;g[6][13]=!0;g[8][3]=!0;g[8][7]=!0;g[8][11]=!0;g[8][15]=!0;return g;})()},
     'dnb': { kit: 'dnb', bpm: 174, grid: (()=>{ let g = createEmptyGrid(); g[0][0]=true;g[0][10]=true;g[2][4]=true;g[2][12]=true; for(let i=0;i<16;i+=2)g[5][i]=true; g[6][14]=true; return g; })() },
     '90s_house': { kit: 'tr909', bpm: 122, grid: (()=>{ let g=createEmptyGrid();for(let i=0;i<16;i+=4)g[0][i]=!0;g[2][4]=!0;g[2][12]=!0;for(let i=2;i<16;i+=4)g[6][i]=!0;g[10][7]=!0;g[10][15]=!0;return g;})()},
-    'house': { kit: 'house', bpm: 125, grid: (()=>{ let g = createEmptyGrid(); for(let i=0;i<16;i+=4)g[0][i]=true; for(let i=4;i<16;i+=4)g[4][i]=true; for(let i=2;i<16;i+=4)g[5][i]=true; return g; })() },
+    'house': { kit: 'house', bpm: 125, grid: (()=>{ let g=createEmptyGrid();g[0][0]=true;g[0][4]=true;g[0][8]=true;g[0][12]=true; g[2][4]=true;g[2][12]=true; g[5][2]=true;g[5][6]=true;g[5][10]=true;g[5][14]=true; return g; })() },
     'techno': { kit: 'techno', bpm: 130, grid: (()=>{ let g = createEmptyGrid(); for(let i=0;i<16;i+=4)g[0][i]=true; for(let i=2;i<16;i+=4)g[6][i]=true; g[2][4]=true;g[2][12]=true; return g; })() },
     'minimal_house': { kit: 'minimal_house', bpm: 125, grid: (()=>{ let g = createEmptyGrid(); for(let i=0;i<16;i+=4)g[0][i]=true; for(let i=2;i<16;i+=4)g[5][i]=true; g[4][4]=true;g[4][12]=true; return g; })() },
     '2_step_garage': { kit: 'house', bpm: 132, grid: (()=>{ let g = createEmptyGrid(); g[0][0]=true;g[0][6]=true;g[0][10]=true; g[2][4]=true;g[2][12]=true; for(let i=2;i<16;i+=4)g[6][i]=true; return g; })() },
-    'trance_anthem': { kit: 'tr909', bpm: 138, grid: (()=>{ let g=createEmptyGrid();for(let i=0;i<16;i+=4)g[0][i]=!0;g[4][4]=!0;g[4][12]=!0;for(let i=2;i<16;i+=4)g[6][i]=!0;for(let i=0;i<16;i++)g[5][i]=!0;g[5][3]=!1;g[5][7]=!1;g[5][11]=!1;g[5][15]=!1;return g;})()},
     'future_bass': { kit: 'synth', bpm: 150, grid: (()=>{ let g=createEmptyGrid();g[0][0]=!0;g[0][6]=!0;g[2][4]=!0;g[2][12]=!0;g[5][0]=!0;g[5][1]=!0;g[5][4]=!0;g[5][5]=!0;g[5][6]=!0;g[5][7]=!0;g[5][8]=!0;g[5][12]=!0;g[5][13]=!0;g[5][14]=!0;g[5][15]=!0;return g;})()},
     'disco': { kit: 'funk', bpm: 120, grid: (()=>{ let g = createEmptyGrid(); for(let i=0;i<16;i+=4)g[0][i]=true; g[4][4]=true;g[4][12]=true; for(let i=0;i<16;i+=2)g[5][i]=true; for(let i=2;i<16;i+=4)g[6][i]=true; return g; })() },
     'funk': { kit: 'funk', bpm: 110, grid: (()=>{ let g = createEmptyGrid(); g[0][0]=true;g[0][3]=true;g[0][6]=true;g[0][10]=true; g[2][4]=true;g[2][12]=true; for(let i=0;i<16;i++)g[5][i]=true; g[6][3]=true;g[6][7]=true;g[6][11]=true;g[6][15]=true; return g; })() },
@@ -853,7 +856,10 @@ const sequencerPresets = {
     'tribal_house': { kit: 'tribal', bpm: 122, grid: (()=>{ let g = createEmptyGrid(); for(let i=0;i<16;i+=4)g[0][i]=true; g[10][2]=true;g[10][5]=true;g[10][6]=true;g[10][10]=true;g[10][13]=true;g[10][14]=true; for(let i=0;i<16;i++)g[8][i]=true; g[3][4]=true;g[3][12]=true; return g; })() },
     'cinematic_march': { kit: 'cinematic', bpm: 100, grid: (()=>{ let g = createEmptyGrid(); g[0][0]=true;g[0][2]=true;g[0][4]=true;g[0][6]=true;g[0][8]=true;g[0][10]=true;g[0][12]=true;g[0][14]=true; g[2][4]=true;g[2][12]=true; g[11][0]=true; return g; })() },
     'glitch_hop': { kit: 'glitch', bpm: 105, grid: (()=>{ let g = createEmptyGrid(); g[0][0]=true;g[0][7]=true; g[2][4]=true; g[12][2]=true;g[12][6]=true;g[12][9]=true;g[12][10]=true;g[12][11]=true;g[12][14]=true; g[5][0]=true;g[5][4]=true;g[5][8]=true;g[5][12]=true;g[5][13]=true;g[5][14]=true; return g; })() },
-    'bo_diddley': { kit: 'vintage', bpm: 100, grid: (()=>{ let g = createEmptyGrid(); g[10][0]=true;g[10][2]=true;g[10][5]=true;g[10][7]=true;g[10][10]=true; g[2][4]=true;g[2][12]=true; for(let i=0;i<16;i+=2)g[5][i]=true; return g; })() }
+    'bo_diddley': { kit: 'vintage', bpm: 100, grid: (()=>{ let g = createEmptyGrid(); g[10][0]=true;g[10][2]=true;g[10][5]=true;g[10][7]=true;g[10][10]=true; g[2][4]=true;g[2][12]=true; for(let i=0;i<16;i+=2)g[5][i]=true; return g; })() },
+    'bo_diddley_stomp': { kit: 'rock', bpm: 105, grid: (()=>{ let g = createEmptyGrid(); g[0][0]=true;g[0][2]=true;g[0][5]=true;g[0][7]=true;g[0][10]=true;g[0][12]=true; g[4][4]=true;g[4][12]=true; return g; })() },
+    'bo_diddley_latin': { kit: 'ethnic', bpm: 110, grid: (()=>{ let g = createEmptyGrid(); g[10][0]=true;g[10][2]=true;g[10][5]=true;g[10][7]=true;g[10][10]=true; g[3][4]=true; g[8][0]=true;g[8][1]=true;g[8][2]=true;g[8][3]=true;g[8][4]=true;g[8][5]=true;g[8][6]=true;g[8][7]=true;g[8][8]=true;g[8][9]=true;g[8][10]=true;g[8][11]=true;g[8][12]=true;g[8][13]=true;g[8][14]=true;g[8][15]=true; return g; })() },
+    'bo_diddley_electronic': { kit: 'synth', bpm: 120, grid: (()=>{ let g = createEmptyGrid(); g[0][0]=true;g[0][2]=true;g[0][5]=true;g[0][7]=true;g[0][10]=true; g[4][4]=true;g[4][12]=true; g[6][0]=true;g[6][1]=true;g[6][2]=true;g[6][3]=true;g[6][4]=true;g[6][5]=true;g[6][6]=true;g[6][7]=true;g[6][8]=true;g[6][9]=true;g[6][10]=true;g[6][11]=true;g[6][12]=true;g[6][13]=true;g[6][14]=true;g[6][15]=true; return g; })() }
 };
 
 function buildSequencer() {
@@ -1136,7 +1142,16 @@ function init(){
             currentDrumKit = e.target.dataset.kit; 
             drumKitList.querySelector('.active').classList.remove('active'); 
             e.target.classList.add('active');
-            if (isAudioInitialized) { const previewSound = soundKits[currentDrumKit].kick; if (previewSound) previewSound({}); }
+            if (isAudioInitialized) {
+                const kit = soundKits[currentDrumKit] || soundKits.acoustic;
+                const kick = kit.kick;
+                const hihat = kit.hihat;
+                const snare = kit.snare;
+
+                if (kick) kick({});
+                if (hihat) setTimeout(() => hihat({type: 'closed'}), 200);
+                if (snare) setTimeout(() => snare({}), 400);
+            }
         } 
     });
     const toggleLeft = document.getElementById('toggle-left-sidebar'); const toggleRight = document.getElementById('toggle-right-sidebar');
@@ -1150,5 +1165,3 @@ if(document.readyState==='loading'){window.addEventListener('DOMContentLoaded',i
 </script>
 </body>
 </html>
-
-  
