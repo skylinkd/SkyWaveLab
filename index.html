@@ -235,27 +235,25 @@
     <div class="card" id="guitarPane" role="tabpanel" style="display:none">
         <div class="row" style="justify-content: space-between; align-items: center;">
             <label>Guitar (E A D G B E • 0–12 frets)</label>
-            <div class="row" style="gap: 16px;">
+                        <div class="row" style="gap: 48px;">
                 <div class="col">
                     <label>Tuning</label>
-                    <div id="tuningButtons" class="row" style="gap: 4px;">
-                        <button class="btn" data-midi="64" title="High E (String 1)">E</button>
-                        <button class="btn" data-midi="59" title="B (String 2)">B</button>
-                        <button class="btn" data-midi="55" title="G (String 3)">G</button>
-                        <button class="btn" data-midi="50" title="D (String 4)">D</button>
-                        <button class="btn" data-midi="45" title="A (String 5)">A</button>
+                    <div id="tuningButtons" class="row" style="gap: 4px; flex-wrap: nowrap;">
                         <button class="btn" data-midi="40" title="Low E (String 6)">E</button>
+                        <button class="btn" data-midi="45" title="A (String 5)">A</button>
+                        <button class="btn" data-midi="50" title="D (String 4)">D</button>
+                        <button class="btn" data-midi="55" title="G (String 3)">G</button>
+                        <button class="btn" data-midi="59" title="B (String 2)">B</button>
+                        <button class="btn" data-midi="64" title="High E (String 1)">E</button>
                     </div>
                 </div>
                 <div class="col" style="max-width: 180px;">
                     <label>Position</label>
                     <select id="guitarPosition">
                         <option value="all">All Positions</option>
-                        <option value="1">Position 1</option>
-                        <option value="2">Position 2</option>
-                        <option value="3">Position 3</option>
-                        <option value="4">Position 4</option>
-                        <option value="5">Position 5</option>
+                        <option value="1">Position 1 (0-3)</option>
+                        <option value="2">Position 2 (4-8)</option>
+                        <option value="3">Position 3 (9+)</option>
                     </select>
                 </div>
             </div>
@@ -669,86 +667,42 @@ function buildMiniPiano(){buildPianoGeneric(miniPiano,60,71)}
 const STR=[64,59,55,50,45,40], FRETS=12; function yStr(s,pad,sh){return playerView && playerView.checked? pad+s*sh: pad+(STR.length-1-s)*sh}
 function buildNeck(){ if(!gSVG) return; const W=1000,H=300,pad=24; const fw=(W-2*pad)/(FRETS+1), sh=(H-2*pad)/(STR.length-1); gSVG.innerHTML=''; for(let f=0;f<=FRETS;f++){const x=pad+f*fw; gSVG.insertAdjacentHTML('beforeend',`<line class='fret' x1='${x}' y1='${pad-6}' x2='${x}' y2='${H-pad+6}'/>`)} for(let s=0;s<STR.length;s++){const y=yStr(s,pad,sh); gSVG.insertAdjacentHTML('beforeend',`<line class='string' x1='${pad}' y1='${y}' x2='${W-pad}' y2='${y}'/>`)} [3,5,7,9].forEach(f=>{const x=pad+(f-0.5)*fw; gSVG.insertAdjacentHTML('beforeend',`<circle cx='${x}' cy='${H/2}' r='5' fill='#6b7280'/>`)}); const x12=pad+11.5*fw; gSVG.insertAdjacentHTML('beforeend',`<circle cx='${x12}' cy='${H/2 - sh/2}' r='5' fill='#6b7280'/> <circle cx='${x12}' cy='${H/2 + sh/2}' r='5' fill='#6b7280'/>`); const nutX=pad-((W-2*pad)/(FRETS+1))/2; gSVG.insertAdjacentHTML('afterbegin',`<rect x='${nutX-3}' y='${pad-8}' width='6' height='${H-2*pad+16}' fill='#ccc' opacity='.75'/>`) }
 
-const GUITAR_PATTERNS = {
-    'Major (Ionian)': [ [[0,2,4],[0,2,4],[1,2,4],[1,3,4],[2,4,5],[2,4,5]], [[-3,-1,0],[-3,-1,0],[-3,-1],[-3,-1,0],[-3,-1,0],[-3,-1,0]], [[-3,-1,0],[-3,-1,0],[-3,-1],[-3,-1],[-3,-1,0],[-3,-1,0]], [[-2,0,2],[-2,0,2],[-2,-1,1],[-2,0,2],[-3,-1,0],[-2,0,2]], [[-3,-1],[-3,-1],[-3,-2,0],[-3,-1,0],[-3,-1],[-3,-1]] ],
-    'Minor Pentatonic': [ [[0,3],[0,2],[0,2],[0,2],[0,3],[0,3]], [[-2,0],[-3,0],[-3,0],[-3,-1],[-2,0],[-2,0]], [[-2,0],[-3,0],[-3,-1],[-3,-1],[-2,0],[-2,0]], [[-2,0],[-2,0],[-3,-1],[-3,0],[-3,0],[-2,0]], [[-3,0],[-3,0],[-2,0],[-2,0],[-3,0],[-3,0]] ]
-};
-GUITAR_PATTERNS['Natural Minor (Aeolian)'] = GUITAR_PATTERNS['Major (Ionian)']; 
-GUITAR_PATTERNS['Major Pentatonic'] = GUITAR_PATTERNS['Minor Pentatonic'];
-function getPatternForScale(scaleName) {
-    if (GUITAR_PATTERNS[scaleName]) return GUITAR_PATTERNS[scaleName];
-    if (scaleName.includes('Pentatonic')) return GUITAR_PATTERNS['Major Pentatonic'];
-    return GUITAR_PATTERNS['Major (Ionian)'];
-}
+function drawGuitarFretboard() {
+    buildNeck();
+    let { active, roots } = state();
+    const position = el('guitarPosition').value;
 
-function getNotesInPosition(active, roots, positionIndex) {
-    const { kRoot, sType } = state();
-    if (!SCALES[sType]) return { notes: new Set(), roots };
+    let minFret = 0;
+    let maxFret = FRETS; 
 
-    const patterns = getPatternForScale(sType);
-    const pattern = patterns[positionIndex - 1];
-    
-    let rootFret = -1;
-    for (let f = 0; f <= 12; f++) {
-        if (mod(STR[5] + f, 12) === kRoot) {
-            rootFret = f;
-            break;
-        }
+    if (position === '1') {
+        maxFret = 3;
+    } else if (position === '2') {
+        minFret = 4;
+        maxFret = 8;
+    } else if (position === '3') {
+        minFret = 9;
+        maxFret = FRETS;
     }
-    if (rootFret === -1) {
-        for (let f = 0; f <= 12; f++) {
-            if (mod(STR[4] + f, 12) === kRoot) {
-                rootFret = f;
-                break;
-            }
-        }
-    }
-    if (rootFret === -1) rootFret = 0;
-    
-    const notesInPos = new Set();
-    const isMinor = sType.includes('Minor');
-    const minorShift = isMinor ? 3 : 0;
-    
+
+    const notesToDraw = [];
     for (let s = 0; s < 6; s++) {
-        for (const fretOffset of pattern[s]) {
-            const fret = rootFret + fretOffset + minorShift;
-            if (fret >= 0 && fret <= FRETS) {
-                const midi = STR[s] + fret;
-                if (active.has(mod(midi, 12))) {
-                    notesInPos.add(midi);
+        for (let f = 0; f <= FRETS; f++) {
+            if (f >= minFret && f <= maxFret) {
+                const midi = STR[s] + f;
+                const pc = mod(midi, 12);
+                if (active.has(pc)) {
+                    notesToDraw.push({ midi, pc, s, f, isRoot: roots.has(pc) });
                 }
             }
         }
     }
-    return { notes: notesInPos, roots };
-}
 
-function drawGuitarFretboard(){
-    buildNeck();
-    let {active, roots} = state();
-    const position = el('guitarPosition').value;
-    let allowedMidiNotes = new Set([...Array(128).keys()]);
-
-    if (position !== 'all') {
-        allowedMidiNotes = getNotesInPosition(active, roots, parseInt(position, 10)).notes;
-    }
-    
-    const notesToDraw = [];
-    for (let s = 0; s < 6; s++) {
-        for (let f = 0; f <= FRETS; f++) {
-            const midi = STR[s] + f;
-            const pc = mod(midi, 12);
-            if (active.has(pc) && allowedMidiNotes.has(midi)) {
-                notesToDraw.push({midi, pc, s, f, isRoot: roots.has(pc)});
-            }
-        }
-    }
-
-    const W=1000,H=300,pad=24;
-    const fw=(W-2*pad)/(FRETS+1), sh=(H-2*pad)/(STR.length-1);
+    const W = 1000, H = 300, pad = 24;
+    const fw = (W - 2 * pad) / (FRETS + 1), sh = (H - 2 * pad) / (STR.length - 1);
 
     notesToDraw.forEach(note => {
-        const {midi, pc, s, f, isRoot} = note;
+        const { midi, pc, s, f, isRoot } = note;
         const x = pad + (f === 0 ? -12 : (f - 0.5) * fw);
         const y = yStr(s, pad, sh);
         const r = isRoot ? 12 : 10;
@@ -757,9 +711,9 @@ function drawGuitarFretboard(){
         g.setAttribute('data-midi', midi);
         g.setAttribute('data-pc', pc);
         g.innerHTML = `<circle class='${cls}' cx='${x}' cy='${y}' r='${r}'/><text class='dot-label' x='${x}' y='${y + 4.5}'>${nn(pc)}</text>`;
-        g.onpointerdown=()=>playNoteVisualNoStop(midi);
-        g.onpointerup=()=>stopNoteVisual(midi);
-        g.onpointerleave=()=>stopNoteVisual(midi);
+        g.onpointerdown = () => playNoteVisualNoStop(midi);
+        g.onpointerup = () => stopNoteVisual(midi);
+        g.onpointerleave = () => stopNoteVisual(midi);
         gSVG.appendChild(g);
     });
 }
@@ -1196,3 +1150,5 @@ if(document.readyState==='loading'){window.addEventListener('DOMContentLoaded',i
 </script>
 </body>
 </html>
+
+  
