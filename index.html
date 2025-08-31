@@ -127,6 +127,7 @@
   
   .song-chain-list { display: flex; flex-wrap: wrap; gap: 4px; background: var(--chip); border-radius: 8px; padding: 8px; min-height: 38px; }
   .song-chain-item { background: var(--accent); color: #000; padding: 4px 8px; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
+  .song-chain-item.playing { box-shadow: 0 0 10px var(--accent); }
 </style>
 </head>
 <body data-theme="default">
@@ -232,7 +233,20 @@
 
     <!-- Guitar -->
     <div class="card" id="guitarPane" role="tabpanel" style="display:none">
-      <label>Guitar (E A D G B E • 0–12 frets)</label>
+        <div class="row" style="justify-content: space-between;">
+          <label>Guitar (E A D G B E • 0–12 frets)</label>
+          <div class="col" style="max-width: 180px;">
+            <label>Position</label>
+            <select id="guitarPosition">
+                <option value="all">All Positions</option>
+                <option value="1">Position 1</option>
+                <option value="2">Position 2</option>
+                <option value="3">Position 3</option>
+                <option value="4">Position 4</option>
+                <option value="5">Position 5</option>
+            </select>
+          </div>
+        </div>
       <div class="gwrap"><svg id="guitar" viewBox="0 0 1000 300"></svg></div>
       <div class="voicingInfo" id="voicingInfo">Voicing: —</div>
       <pre class="tab" id="tab">E|----------------|
@@ -555,7 +569,7 @@ function playBrush(effects, context=audioCtx, destination=drumGain, startTime=co
 function playTom(frequency, duration, effects = {}, context=audioCtx, destination=drumGain, startTime=context.currentTime) { const now = startTime; const osc = context.createOscillator(); osc.type = 'sine'; const gain = context.createGain(); const baseFreq = frequency * Math.pow(2, (effects.pitch || 0)/12); osc.frequency.setValueAtTime(baseFreq * 1.2, now); osc.frequency.exponentialRampToValueAtTime(baseFreq, now + 0.05); osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.8, now + duration); gain.gain.setValueAtTime(0.8, now); gain.gain.exponentialRampToValueAtTime(0.001, now + duration); osc.connect(gain); gain.connect(destination); osc.start(now); osc.stop(now + duration + 0.05); }
 function playCymbalTap(effects = {}, context=audioCtx, destination=drumGain, startTime=context.currentTime) { const now = startTime; const noise = context.createBufferSource(); noise.buffer = whiteNoiseBuffer; const bandPass = context.createBiquadFilter(); bandPass.type = 'bandpass'; bandPass.frequency.value = 6000 * Math.pow(2, (effects.pitch || 0)/12); bandPass.Q.value = 0.7; const highPass = context.createBiquadFilter(); highPass.type = 'highpass'; highPass.frequency.value = 4000; const gain = context.createGain(); gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25); noise.connect(bandPass).connect(highPass).connect(gain).connect(destination); noise.start(now); noise.stop(now + 0.3); }
 function playCrashCymbal(effects = {}, context = audioCtx, destination = drumGain, startTime = context.currentTime) { const now = startTime; const noise = context.createBufferSource(); noise.buffer = whiteNoiseBuffer; const bandPass = context.createBiquadFilter(); bandPass.type = 'bandpass'; bandPass.frequency.setValueAtTime(8000, now); bandPass.Q.value = 0.6; const highPass = context.createBiquadFilter(); highPass.type = 'highpass'; highPass.frequency.value = 5000; const gain = context.createGain(); gain.gain.setValueAtTime(0.5, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 1.8); noise.connect(bandPass).connect(highPass).connect(gain).connect(destination); noise.start(now); noise.stop(now + 2.0); }
-function playBlip(effects = {}, context = audioCtx, destination = drumGain, startTime = context.currentTime) { const now = startTime; const osc = context.createOscillator(); osc.type = 'triangle'; const gain = context.createGain(); const baseFreq = 50 * Math.pow(2, (effects.pitch || 0)/12); osc.frequency.setValueAtTime(baseFreq * 24, now); osc.frequency.exponentialRampToValueAtTime(baseFreq, now + 0.1); gain.gain.setValueAtTime(0.4, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1); osc.connect(gain).connect(destination); osc.start(now); osc.stop(now + 0.15); }
+function playBlip(effects = {}, context = audioCtx, destination = drumGain, startTime = context.currentTime) { const now = startTime; const osc = context.createOscillator(); osc.type = 'triangle'; const gain = context.createGain(); const baseFreq = 50 * Math.pow(2, (effects.pitch || 0)/12); osc.frequency.setValueAtTime(baseFreq * 24, now); osc.frequency.exponentialRampToValueAtTime(baseFreq, now + 0.1); gain.gain.setValueAtTime(0.4, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15); osc.connect(gain).connect(destination); osc.start(now); osc.stop(now + 0.15); }
 function playRizer(effects = {}, context = audioCtx, destination = drumGain, startTime = context.currentTime) { const now = startTime; const noise = context.createBufferSource(); noise.buffer = whiteNoiseBuffer; const filter = context.createBiquadFilter(); filter.type = 'bandpass'; filter.Q.value = 15; filter.frequency.setValueAtTime(200, now); filter.frequency.linearRampToValueAtTime(8000, now + 1.8); const gain = context.createGain(); gain.gain.setValueAtTime(0, now); gain.gain.linearRampToValueAtTime(0.3, now + 0.1); gain.gain.linearRampToValueAtTime(0, now + 1.9); noise.connect(filter).connect(gain).connect(destination); noise.start(now); noise.stop(now + 2.0); }
 function playCowbell(effects, context=audioCtx, destination=drumGain, startTime=context.currentTime) { const now = startTime; const osc1 = context.createOscillator(); osc1.type = 'square'; const baseFreq1 = 520 * Math.pow(2, (effects.pitch || 0)/12); osc1.frequency.setValueAtTime(baseFreq1, now); const osc2 = context.createOscillator(); osc2.type = 'square'; const baseFreq2 = 810 * Math.pow(2, (effects.pitch || 0)/12); osc2.frequency.setValueAtTime(baseFreq2, now); const filter = context.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.value = 2500; filter.Q.value = 0.8; const gain = context.createGain(); gain.gain.setValueAtTime(0.4, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15); osc1.connect(filter); osc2.connect(filter); filter.connect(gain).connect(destination); osc1.start(now); osc1.stop(now + 0.2); osc2.start(now); osc2.stop(now + 0.2); }
 function makeDistortionCurve(amount) { let n_samples = 44100, curve = new Float32Array(n_samples), deg = Math.PI / 180, i = 0, x; for ( ; i < n_samples; ++i ) { x = i * 2 / n_samples - 1; curve[i] = ( 3 + amount ) * x * 20 * deg / ( Math.PI + amount * Math.abs(x) ); } return curve; }
@@ -641,7 +655,102 @@ function buildMiniPiano(){buildPianoGeneric(miniPiano,60,71)}
 
 const STR=[64,59,55,50,45,40], FRETS=12; function yStr(s,pad,sh){return playerView && playerView.checked? pad+s*sh: pad+(STR.length-1-s)*sh}
 function buildNeck(){ if(!gSVG) return; const W=1000,H=300,pad=24; const fw=(W-2*pad)/(FRETS+1), sh=(H-2*pad)/(STR.length-1); gSVG.innerHTML=''; for(let f=0;f<=FRETS;f++){const x=pad+f*fw; gSVG.insertAdjacentHTML('beforeend',`<line class='fret' x1='${x}' y1='${pad-6}' x2='${x}' y2='${H-pad+6}'/>`)} for(let s=0;s<STR.length;s++){const y=yStr(s,pad,sh); gSVG.insertAdjacentHTML('beforeend',`<line class='string' x1='${pad}' y1='${y}' x2='${W-pad}' y2='${y}'/>`)} [3,5,7,9].forEach(f=>{const x=pad+(f-0.5)*fw; gSVG.insertAdjacentHTML('beforeend',`<circle cx='${x}' cy='${H/2}' r='5' fill='#6b7280'/>`)}); const x12=pad+11.5*fw; gSVG.insertAdjacentHTML('beforeend',`<circle cx='${x12}' cy='${H/2 - sh/2}' r='5' fill='#6b7280'/> <circle cx='${x12}' cy='${H/2 + sh/2}' r='5' fill='#6b7280'/>`); const nutX=pad-((W-2*pad)/(FRETS+1))/2; gSVG.insertAdjacentHTML('afterbegin',`<rect x='${nutX-3}' y='${pad-8}' width='6' height='${H-2*pad+16}' fill='#ccc' opacity='.75'/>`) }
-function drawMap(active,roots){buildNeck(); if(!gSVG) return; const W=1000,H=300,pad=24; const fw=(W-2*pad)/(FRETS+1), sh=(H-2*pad)/(STR.length-1); for(let s=0;s<6;s++){for(let f=0;f<=FRETS;f++){const midi=STR[s]+f, pc=mod(midi,12); if(!active.has(pc) && !roots.has(pc)) continue; const x=pad+(f===0?-12:(f-0.5)*fw); const y=yStr(s,pad,sh); const root=roots.has(pc); const r=root?12:10; const cls=root?'dot root':'dot'; const g=document.createElementNS('http://www.w3.org/2000/svg','g'); g.setAttribute('data-midi',midi); g.setAttribute('data-pc',pc); g.innerHTML=`<circle class='${cls}' cx='${x}' cy='${y}' r='${r}'/><text class='dot-label' x='${x}' y='${y+4.5}'>${nn(pc)}</text>`; g.onpointerdown=()=>playNoteVisualNoStop(midi); g.onpointerup=()=>stopNoteVisual(midi); g.onpointerleave=()=>stopNoteVisual(midi); gSVG.appendChild(g); }}}
+
+const GUITAR_PATTERNS = {
+    'Major (Ionian)': [ [[0,2,4],[0,2,4],[1,2,4],[1,3,4],[2,4,5],[2,4,5]], [[-3,-1,0],[-3,-1,0],[-3,-1],[-3,-1,0],[-3,-1,0],[-3,-1,0]], [[-3,-1,0],[-3,-1,0],[-3,-1],[-3,-1],[-3,-1,0],[-3,-1,0]], [[-2,0,2],[-2,0,2],[-2,-1,1],[-2,0,2],[-3,-1,0],[-2,0,2]], [[-3,-1],[-3,-1],[-3,-2,0],[-3,-1,0],[-3,-1],[-3,-1]] ],
+    'Minor Pentatonic': [ [[0,3],[0,2],[0,2],[0,2],[0,3],[0,3]], [[-2,0],[-3,0],[-3,0],[-3,-1],[-2,0],[-2,0]], [[-2,0],[-3,0],[-3,-1],[-3,-1],[-2,0],[-2,0]], [[-2,0],[-2,0],[-3,-1],[-3,0],[-3,0],[-2,0]], [[-3,0],[-3,0],[-2,0],[-2,0],[-3,0],[-3,0]] ]
+};
+GUITAR_PATTERNS['Natural Minor (Aeolian)'] = GUITAR_PATTERNS['Major (Ionian)']; 
+GUITAR_PATTERNS['Major Pentatonic'] = GUITAR_PATTERNS['Minor Pentatonic'];
+function getPatternForScale(scaleName) {
+    if (GUITAR_PATTERNS[scaleName]) return GUITAR_PATTERNS[scaleName];
+    if (scaleName.includes('Pentatonic')) return GUITAR_PATTERNS['Major Pentatonic'];
+    return GUITAR_PATTERNS['Major (Ionian)'];
+}
+
+function getNotesInPosition(active, roots, positionIndex) {
+    const { kRoot, sType } = state();
+    if (!SCALES[sType]) return { notes: new Set(), roots };
+
+    const patterns = getPatternForScale(sType);
+    const pattern = patterns[positionIndex - 1];
+    
+    let rootFret = -1;
+    for (let f = 0; f <= 12; f++) {
+        if (mod(STR[5] + f, 12) === kRoot) {
+            rootFret = f;
+            break;
+        }
+    }
+    if (rootFret === -1) {
+        for (let f = 0; f <= 12; f++) {
+            if (mod(STR[4] + f, 12) === kRoot) {
+                rootFret = f;
+                break;
+            }
+        }
+    }
+    if (rootFret === -1) rootFret = 0;
+    
+    const notesInPos = new Set();
+    const isMinor = sType.includes('Minor');
+    const minorShift = isMinor ? 3 : 0;
+    
+    for (let s = 0; s < 6; s++) {
+        for (const fretOffset of pattern[s]) {
+            const fret = rootFret + fretOffset + minorShift;
+            if (fret >= 0 && fret <= FRETS) {
+                const midi = STR[s] + fret;
+                if (active.has(mod(midi, 12))) {
+                    notesInPos.add(midi);
+                }
+            }
+        }
+    }
+    return { notes: notesInPos, roots };
+}
+
+function drawGuitarFretboard(){
+    buildNeck();
+    let {active, roots} = state();
+    const position = el('guitarPosition').value;
+    let allowedMidiNotes = new Set([...Array(128).keys()]);
+
+    if (position !== 'all') {
+        allowedMidiNotes = getNotesInPosition(active, roots, parseInt(position, 10)).notes;
+    }
+    
+    const notesToDraw = [];
+    for (let s = 0; s < 6; s++) {
+        for (let f = 0; f <= FRETS; f++) {
+            const midi = STR[s] + f;
+            const pc = mod(midi, 12);
+            if (active.has(pc) && allowedMidiNotes.has(midi)) {
+                notesToDraw.push({midi, pc, s, f, isRoot: roots.has(pc)});
+            }
+        }
+    }
+
+    const W=1000,H=300,pad=24;
+    const fw=(W-2*pad)/(FRETS+1), sh=(H-2*pad)/(STR.length-1);
+
+    notesToDraw.forEach(note => {
+        const {midi, pc, s, f, isRoot} = note;
+        const x = pad + (f === 0 ? -12 : (f - 0.5) * fw);
+        const y = yStr(s, pad, sh);
+        const r = isRoot ? 12 : 10;
+        const cls = isRoot ? 'dot root' : 'dot';
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('data-midi', midi);
+        g.setAttribute('data-pc', pc);
+        g.innerHTML = `<circle class='${cls}' cx='${x}' cy='${y}' r='${r}'/><text class='dot-label' x='${x}' y='${y + 4.5}'>${nn(pc)}</text>`;
+        g.onpointerdown=()=>playNoteVisualNoStop(midi);
+        g.onpointerup=()=>stopNoteVisual(midi);
+        g.onpointerleave=()=>stopNoteVisual(midi);
+        gSVG.appendChild(g);
+    });
+}
+
 
 let currentShapes=[], selShape=0; function genShapes(rootPC,type,center=5){const tones=new Set(cPCs(rootPC,type)); const root=mod(rootPC,12); const strings=STR.map(m=>m); const maxSpan=4; const results=[]; const choice=Array(6).fill(-1); const windowMin=Math.max(0,center-2), windowMax=Math.min(12,center+2); function hasRoot(fr){for(let i=0;i<6;i++){const f=fr[i]; if(f>=0 && mod(strings[i]+f,12)===root) return true} return false} function spanOk(fr){const u=fr.filter(f=>f>0); return !u.length || (Math.max(...u)-Math.min(...u))<=maxSpan} function score(fr){const used=fr.filter(f=>f>=0); if(!used.length) return -1e9; const span=Math.max(...used)-Math.min(...used); const open=fr.filter(f=>f===0).length; const bassRoot = fr.findIndex((f,i)=>f>=0 && mod(strings[i]+f,12)===root); return 120 - span*10 + open*4 - (bassRoot>=0?bassRoot*2:10) + used.length*2} const cand=strings.map((open,i)=>{const opts=[-1]; for(let f=0;f<=12;f++){const pc=mod(open+f,12); if(tones.has(pc) && (f===0 || (f>=windowMin && f<=windowMax))) opts.push(f)} return opts});
  (function dfs(i){ if(i===6){ if(hasRoot(choice)&&spanOk(choice)&&choice.filter(f=>f>=0).length>=3) results.push({frets:[...choice],score:score(choice)}); return } for(const f of cand[i]){ choice[i]=f; if(spanOk(choice)) dfs(i+1) } choice[i]=-1 })(0);
@@ -651,8 +760,8 @@ function renderTab(frets, target){if(!target) return; const s=['E','A','D','G','
 function renderSelectedShapeOverlay(){ if(!gSVG) return; if(!currentShapes.length) {if(voicingInfo) voicingInfo.textContent='Voicing: —'; if(tabEl) tabEl.textContent=presetEmptyTab(); const mtab=el('miniGTab'); if(mtab) mtab.textContent=presetEmptyTab(); return;} const W=1000,H=300,pad=24; const fw=(W-2*pad)/(FRETS+1), sh=(H-2*pad)/(STR.length-1); const fr=currentShapes[selShape].frets; for(let i=0;i<6;i++){const f=fr[i]; if(f<0) continue; const x=pad+(f===0?-12:(f-0.5)*fw); const y=yStr(i,pad,sh); gSVG.insertAdjacentHTML('beforeend',`<circle cx='${x}' cy='${y}' r='13' fill='none' stroke='#fff' stroke-width='2' opacity='.75'/>`) } renderTab(fr, tabEl); renderTab(fr, el('miniGTab')); if(voicingInfo) voicingInfo.textContent='Voicing: '+fr.map((f,i)=>['E','A','D','G','B','E'][5-i]+(f<0?'x':f)).join('  ')}
 
 function state(){const kRoot=+keyRoot.value||0, kMode=keyMode.value||'major', sType=scaleType.value||'Major (Ionian)', cRoot=+chordRoot.value||0, cType=chordType.value||'Major'; const a=new Set(), r=new Set(); if(showScale && showScale.checked){sNotes(kRoot,sType).forEach(n=>a.add(n)); r.add(kRoot)} if(showChord && showChord.checked){cPCs(cRoot,cType).forEach(n=>a.add(n)); r.add(cRoot)} return {kRoot,kMode,sType,cRoot,cType,active:a,roots:r}}
-function highlight(){const {active,roots,cRoot,cType}=state(); if(app && playerView) app.classList.toggle('player', playerView.checked); if(pianoDiv){pianoDiv.querySelectorAll('.key').forEach(k=>{const pc=parseInt(k.dataset.midi,10)%12; k.classList.toggle('root',roots.has(pc)); k.classList.toggle('active',!roots.has(pc)&&active.has(pc))})} drawMap(active,roots); try{currentShapes=genShapes(cRoot,cType,5); selShape=Math.min(selShape, Math.max(0,currentShapes.length-1)); renderSelectedShapeOverlay();}catch(e){} renderMiniPianoForChord(cRoot,cType)}
-function updateAll(){updateFormula(); highlight(); updateProgressionTabs(); buildDiatonicPalette();}
+function updateVisuals(){const {active,roots,cRoot,cType}=state(); if(app && playerView) app.classList.toggle('player', playerView.checked); if(pianoDiv){pianoDiv.querySelectorAll('.key').forEach(k=>{const pc=parseInt(k.dataset.midi,10)%12; k.classList.toggle('root',roots.has(pc)); k.classList.toggle('active',!roots.has(pc)&&active.has(pc))})} drawGuitarFretboard(); try{currentShapes=genShapes(cRoot,cType,5); selShape=Math.min(selShape, Math.max(0,currentShapes.length-1)); renderSelectedShapeOverlay();}catch(e){} renderMiniPianoForChord(cRoot,cType)}
+function updateAll(){updateFormula(); updateVisuals(); updateProgressionTabs(); buildDiatonicPalette();}
 function updateFormula(){const {kRoot,kMode,sType,cRoot,cType}=state(); const sInts=SCALES[sType].map(i=>DEG[i]).join(' – '); const cInts=CHORDS[cType].map(i=>INT[mod(i,12)]).join(', '); if(formula) formula.innerHTML=`<b>Scale:</b> ${nn(kRoot)} ${sType} · ${sInts}<br><b>Chord:</b> ${nn(cRoot)} ${cType} · ${cInts}`}
 
 function flashMidi(m, duration = 300){ document.querySelectorAll(`[data-midi='${m}']`).forEach(el => { el.classList.add('playing'); setTimeout(() => el.classList.remove('playing'), duration); }); }
@@ -836,6 +945,7 @@ function buildSequencer() {
 function sequencerClock() {
     let activeGrid;
     if (isSongMode) {
+        if (songChain.length === 0) return;
         const patternId = songChain[songPlaybackIndex];
         activeGrid = seqGrids[patternId];
         document.querySelectorAll('.song-chain-item').forEach((item, index) => {
@@ -881,8 +991,8 @@ function toggleSequencer() {
             if (currentStep >= sequencerLength) {
                 currentStep = 0;
                 if (isSongMode) {
-                    songPlaybackIndex = (songPlaybackIndex + 1) % songChain.length;
-                    if (songChain.length === 0) { // Stop if chain is empty
+                    songPlaybackIndex++;
+                    if (songPlaybackIndex >= songChain.length) {
                         toggleSequencer();
                         return;
                     }
@@ -1005,6 +1115,7 @@ function updateArpNotes() { if (isArpOn) { stopArp(); if (heldKeys.size > 0) sta
 function wireBasics(){
     el('themeSelector').addEventListener('change', (e) => { document.body.setAttribute('data-theme', e.target.value); });
     ['keyRoot','keyMode','scaleType','chordRoot','chordType','showScale','showChord','playerView'].forEach(id=>{const t=el(id); if(t) t.addEventListener('change',updateAll)});
+    el('guitarPosition').addEventListener('change', updateVisuals);
     const mainTabs = document.querySelector('.tabs'); const tabPanes = { piano: el('pianoPane'), guitar: el('guitarPane'), progressions: el('progressPane'), sequencer: el('sequencerPane') }; mainTabs.addEventListener('click', (e) => { const targetTab = e.target.closest('.tab'); if (!targetTab) return; mainTabs.querySelector('.tab.active').classList.remove('active'); targetTab.classList.add('active'); const tabName = targetTab.dataset.tab; Object.values(tabPanes).forEach(pane => { if (pane) pane.style.display = 'none'; }); if (tabPanes[tabName]) { tabPanes[tabName].style.display = 'block'; } updateAll(); });
     const pc=el('playChord'), ps=el('playScale'); if(pc) pc.onclick=()=>{if(!initAudioSystem()) return; const {cRoot,cType}=state(); cPCs(cRoot,cType).forEach((pc,i)=>{playNoteVisual(48+pc)})}; if(ps) ps.onclick=()=>{if(!initAudioSystem()) return; const {kRoot,sType}=state(); const seq=[...sNotes(kRoot,sType), ...sNotes(kRoot,sType).slice(0,-2).reverse()]; seq.forEach((pc,i)=>{setTimeout(()=>playNoteVisual(48+pc, 170), i*170)})};
     el('qwertyMode').addEventListener('click', e => { if (e.target.tagName === 'BUTTON') { qwertyMode = e.target.dataset.mode; el('qwertyMode').querySelector('.active').classList.remove('active'); e.target.classList.add('active'); updateKeyboardInfo(); }});
